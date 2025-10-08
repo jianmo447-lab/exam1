@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《大乘起信論》— 逐題版（一次交卷）</title>
+<style>
+  :root { --bg:#0b0f14; --card:#121821; --text:#e5eef7; --muted:#9bb3c9; --accent:#4bb3ff; --ok:#2ecc71; --bad:#ff6b6b; }
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans TC",sans-serif;background:var(--bg);color:var(--text);}
+  header{padding:20px 16px;text-align:center;border-bottom:1px solid #1e2a39;}
+  header h1{margin:0;font-size:22px;letter-spacing:0.5px}
+  header p{margin:8px 0 0;color:var(--muted);font-size:14px}
+  .container{max-width:880px;margin:0 auto;padding:18px;}
+  .panel{background:var(--card);border:1px solid #1e2a39;border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .row > *{flex:1}
+  label{font-size:14px;color:var(--muted);display:block;margin-bottom:6px}
+  select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a3a52;background:#0e141d;color:var(--text);}
+  button{padding:10px 14px;border-radius:12px;border:1px solid #2a3a52;background:#0f1a28;color:var(--text);cursor:pointer}
+  button.primary{background:linear-gradient(135deg,#1a7bf2,#4bb3ff);border:0;color:white;font-weight:600}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .qcard{background:#0f1520;border:1px solid #213047;border-radius:16px;padding:16px;margin:12px 0}
+  .qhead{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}
+  .qtitle{font-size:16px;font-weight:600}
+  .qcat{font-size:12px;color:#a4bed7;padding:4px 8px;border:1px solid #2a3a52;border-radius:999px}
+  .progress{font-size:12px;color:#b6cce1}
+  .opts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+  .opt{border:1px solid #2a3a52;border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;background:#0c121a}
+  .opt input{margin-top:3px}
+  .navs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .result,.hint{display:none;margin-top:12px;padding:10px;border-radius:12px;background:#0f1a28;border:1px solid #2a3a52}
+  .score{font-weight:700}
+  .ok{color:var(--ok)} .bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<header>
+  <h1>《大乘起信論》— 逐題版（一次交卷）</h1>
+  <p>每次只顯示一題 · 作答過程不提示正解 · 交卷後統一評分</p>
+</header>
+<div class="container">
+  <div class="panel" id="config" style="display:block">
+    <div class="row">
+      <div>
+        <label for="sid">學號</label>
+        <input id="sid" type="text" placeholder="請輸入學號（必填）">
+      </div>
+      <div>
+        <label for="category">題目類別</label>
+        <select id="category">
+          <option value="__ALL__">全部題目</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="primary" id="start">開始作答</button>
+      <button id="resetAll" style="display:none">重新選類別</button>
+      <button id="submit" style="display:none">交卷</button>
+      <button id="showAnswers" style="display:none">顯示正解</button>
+    </div>
+  </div>
+
+  <div id="qwrap" class="panel" style="display:none"></div>
+  <div id="summary" class="panel" style="display:none"></div>
+</div>
+
+<script>
+const DATA = [{"id":1,"question":"《起信論》所稱「摩訶衍」的「大」，重點在於：","options":["因小而顯大的比較大","眾生與佛等高的大","本具心性的絕對大、周遍法界","經典字數宏富之大"],"answer":"C","category":"總論與釋名","hint":"心性絕對周遍之大"},{"id":2,"question":"「說有五分」指本論五大段落，下列何者不是其中之一？","options":["因緣分","立義分","校勘分","勸修利益分"],"answer":"C","category":"五分結構／三分對應","hint":"本論結構與分判"},{"id":3,"question":"以三分法對應，「因緣分」屬於：","options":["序分","正宗分","流通分","附錄分"],"answer":"A","category":"五分結構／三分對應","hint":"本論結構與分判"},{"id":4,"question":"「立義分、解釋分、修行信心分」在三分法中皆屬：","options":["序分","正宗分","流通分","雜說分"],"answer":"B","category":"五分結構／三分對應","hint":"本論結構與分判"},{"id":5,"question":"八因緣中的「總相」是：","options":["令眾生離一切苦、得究竟樂","建立宗派名號","弘揚戒律條文","求世間名利恭敬"],"answer":"A","category":"八因緣","hint":"令離苦得究竟樂"},{"id":6,"question":"論主造論「非求世間名利恭敬故」，其用意在表明：","options":["文字功夫至上","以慈善濟世為主","以出世解脫為宗，不為利養","以辯論勝負為榮"],"answer":"C","category":"其他／綜合","hint":"以出世解脫為宗，不為利養"},{"id":7,"question":"「為欲解釋如來根本之義」中之「根本」所指，重在：","options":["五戒十善","四諦十二因緣","一心不生之不生不滅心（心真如門）","八風不動之行持"],"answer":"C","category":"八因緣","hint":"一心不生真如門"},{"id":8,"question":"依文義，如來根本之義與《法華經》相呼應者為：","options":["唯二乘法","一佛乘、除方便說","唯禪門","唯淨土門"],"answer":"B","category":"八因緣","hint":"一心不生真如門"},{"id":9,"question":"「令善根成熟眾生，堪任不退信」主要對應三不退中的：","options":["位不退","行不退","念不退","智不退"],"answer":"A","category":"八因緣","hint":"對應位不退"},{"id":10,"question":"「善根微少眾生」比喻為「毛道菩薩」，其特徵是：","options":["久住寂滅","進退不常、易為境風所動","神通自在","已證無學位"],"answer":"B","category":"八因緣","hint":"易受境風動"},{"id":11,"question":"「為示方便消惡業障，善護其心」所稱「方便」在本論中首重：","options":["外求感應","依摩訶衍理起觀行以銷障","唯持戒不觀心","唯誦經不思惟"],"answer":"B","category":"八因緣","hint":"依理起觀以銷障"},{"id":12,"question":"「遠離癡慢，出邪網」中所說「邪網」指：","options":["世間人情網","邪知邪見與癡慢等煩惱之羈絆","天羅地網","業報所織的命運網"],"answer":"B","category":"八因緣","hint":"邪見癡慢之羈絆"},{"id":13,"question":"七慢之中為根本者是：","options":["慢","過慢","我慢","卑慢"],"answer":"C","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":14,"question":"「過慢」正確的描述是：","options":["對劣於己者自恃高勝","對與己等者偏說己勝，對勝己者說與己等","對勝己者反說己勝","無德謂有德"],"answer":"B","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":15,"question":"「慢過慢」指：","options":["對勝己者反執己勝","對等者謂己勝","對劣者起輕蔑","自輕他重"],"answer":"A","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":16,"question":"「增上慢」是：","options":["自輕於賢","未得謂得、未證謂證","無德謂有德","自卑不學"],"answer":"B","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":17,"question":"「卑慢」的二態不含下列何者？","options":["明劣於彼而謂僅稍劣","已承認他勝卻不肯學","高位者輕賤群下","嫉妒心理使然"],"answer":"C","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":18,"question":"「邪慢」在文中特指：","options":["對善法生慢","無德而自謂有德","有德自謙","以學問自負"],"answer":"B","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":19,"question":"法藏大師《梵網經菩薩戒本疏》所列「十慢」是依何而生？","options":["依戒條","依境界執著而起慢","依外道論而起慢","依天趣福報而起慢"],"answer":"B","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":20,"question":"下列哪一項不屬十慢所列？","options":["聰明慢","世智慢","高門慢","定慧慢"],"answer":"D","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":21,"question":"「高貴慢」主要因由是：","options":["以學位自矜","以官位尊顯而起慢","以財富炫耀","以戒相嚴整"],"answer":"B","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":22,"question":"「解慢」在文中是指：","options":["通達深法而無慢","恃解於世法或小乘典而輕深法","以定攝心","以慧破執"],"answer":"B","category":"慢心分析（七慢／十慢）","hint":"七慢十慢辨析"},{"id":23,"question":"「止觀」在因果兩端的名相對應為：","options":["因位止觀，果上戒慧","因位止觀，果上定慧","因位戒定，果上止觀","因位慧定，果上止戒"],"answer":"B","category":"止觀修行","hint":"寂照一如定慧不二"},{"id":24,"question":"本論倡導之「摩訶止觀」所觀之境要點為：","options":["四諦次第觀","緣起十二有支","以實相為對境，寂照一如、定慧不二","觀身不淨為主"],"answer":"C","category":"止觀修行","hint":"寂照一如定慧不二"},{"id":25,"question":"「專念方便」的次第意涵，較貼切者是：","options":["只持名即可，不須思惟","攝念→轉念→止念→破念→歸無念","觀境→起想→強念→固守","執著專念為究竟"],"answer":"B","category":"八因緣","hint":"依理起觀以銷障"},{"id":26,"question":"文中對「以妄止妄」的正解是：","options":["批判念佛無益","先以善念對治惡念，終歸無念實相","以惡制善","以外力破內心"],"answer":"B","category":"止觀修行","hint":"善對治終歸無念"},{"id":27,"question":"「事一心不亂」的說明最恰當者：","options":["當下即證無學果","仍屬相分境界之善夢","必有神通現前","無念無住之理境"],"answer":"B","category":"其他／綜合","hint":"仍屬相分善夢"},{"id":28,"question":"「念佛三義」中之「自他念佛不二」所依根據是：","options":["自力他力互斥","心外有佛","三界唯心、萬法唯識，心外無佛無法","但他力可成"],"answer":"C","category":"念佛三義","hint":"唯心唯識心外無佛"},{"id":29,"question":"「如來在世不須論」的理由，文中著重：","options":["文辭已足","圓音一演、異類等解，色心業勝","眾生皆神通","經量已備"],"answer":"B","category":"說論因緣／結語","hint":"圓音演說異類等解"},{"id":30,"question":"「如來滅後應說此論」的總結意旨：","options":["製造新義以勝舊經","以長篇廣論取代經藏","眾生根行不等，有人依廣論解，有人樂少文攝多義，故須總攝廣大深法","唯以戒律攝持"],"answer":"C","category":"說論因緣／結語","hint":"總攝廣大深法"}];
+
+const state = { data: DATA, picked: [], answers: {}, revealAll: false, submitted: false, idx: 0, sid: '' };
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function init(){
+  const cats = Array.from(new Set(state.data.map(d=>d.category))).sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const $cat = document.getElementById('category');
+  cats.forEach(c=>{ const opt=document.createElement('option'); opt.value=c; opt.textContent=c; $cat.appendChild(opt); });
+}
+
+function start(){
+  const sid = (document.getElementById('sid').value||'').trim();
+  if(!sid){ alert('請先輸入學號'); return; }
+  state.sid = sid;
+
+  const cat = document.getElementById('category').value;
+  state.picked = state.data.filter(d => cat==='__ALL__' ? true : d.category===cat);
+  state.idx = 0;
+  state.answers = {};
+  state.revealAll = false;
+  state.submitted = false;
+  document.getElementById('config').style.display = 'block';
+  document.getElementById('resetAll').style.display = 'inline-block';
+  document.getElementById('submit').style.display = 'inline-block';
+  document.getElementById('showAnswers').style.display = 'inline-block';
+  document.getElementById('qwrap').style.display = 'block';
+  renderQuestion();
+  renderSummary();
+}
+
+function renderQuestion(){
+  const q = state.picked[state.idx];
+  const total = state.picked.length;
+  const $wrap = document.getElementById('qwrap');
+  $wrap.innerHTML = '';
+  if(!q){ $wrap.textContent = '沒有題目'; return; }
+
+  const card = document.createElement('div'); card.className='qcard';
+  const head = document.createElement('div'); head.className='qhead';
+  const title = document.createElement('div'); title.className='qtitle';
+  title.textContent = `${state.idx+1}. ${q.question}`;
+  const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px'; right.style.alignItems='center';
+  const cat = document.createElement('div'); cat.className='qcat'; cat.textContent = q.category;
+  const prog = document.createElement('div'); prog.className='progress'; prog.textContent = `第 ${state.idx+1} / ${total} 題`;
+  right.appendChild(prog); right.appendChild(cat);
+  head.appendChild(title); head.appendChild(right);
+
+  const opts = document.createElement('div'); opts.className='opts';
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt,i)=>{
+    const row = document.createElement('label'); row.className='opt';
+    const input = document.createElement('input'); input.type='radio'; input.name='ans'; input.value=letters[i];
+    input.checked = state.answers[q.id] === letters[i];
+    input.addEventListener('change', ()=>{ state.answers[q.id] = input.value; renderSummary(); });
+    const text = document.createElement('div'); text.innerHTML = `<strong>${letters[i]}.</strong> ${opt}`;
+    row.appendChild(input); row.appendChild(text);
+    opts.appendChild(row);
+  });
+
+  const result = document.createElement('div'); result.className='result';
+  const hint = document.createElement('div'); hint.className='hint'; hint.textContent = q.hint || '';
+
+  const navs = document.createElement('div'); navs.className='navs';
+  const prev = document.createElement('button'); prev.textContent='上一題'; prev.disabled = state.idx===0;
+  const next = document.createElement('button'); next.textContent = state.idx===total-1 ? '最後一題' : '下一題';
+  prev.addEventListener('click', ()=>{ state.idx=Math.max(0,state.idx-1); renderQuestion(); });
+  next.addEventListener('click', ()=>{ state.idx=Math.min(total-1,state.idx+1); renderQuestion(); });
+  navs.appendChild(prev); navs.appendChild(next);
+
+  // Show per-question feedback immediately after answering (always per-question),
+  // but total score remains hidden until "交卷".
+  {
+    const user = state.answers[q.id];
+    const correct = q.answer;
+    if(user){
+      const ok = (user||'').toUpperCase()===(correct||'').toUpperCase();
+      result.style.display='block';
+      result.innerHTML = ok ? '<span class="ok">✅ 正確</span>' : `<span class="bad">❌ 錯誤</span> 正解：<strong>${correct}</strong> · ${q.options['ABCD'.indexOf(correct)]}`;
+      if(q.hint) hint.style.display='block';
+    } else {
+      result.style.display='none';
+      hint.style.display='none';
+    }
+  }
+
+  card.appendChild(head); card.appendChild(opts); card.appendChild(navs); card.appendChild(result); card.appendChild(hint);
+  $wrap.appendChild(card);
+}
+
+function renderSummary(){
+  const $s = document.getElementById('summary');
+  const total = state.picked.length;
+  const answered = state.picked.filter(q => state.answers[q.id]).length;
+  const correct = state.picked.filter(q => state.answers[q.id] && state.answers[q.id].toUpperCase()===q.answer.toUpperCase()).length;
+  const rate = answered ? (correct/answered*100).toFixed(0) : 0;
+  $s.style.display = 'block';
+  if(state.submitted || state.revealAll){
+    $s.innerHTML = `<div><strong>成績</strong>（學號：<span class="score">${state.sid}</span>）：<span class="score ok">${correct}</span> / ${total} 題 · 正確率 <span class="score">${rate}%</span> · 已作答 ${answered}/${total}</div>`;
+  } else {
+    $s.innerHTML = `<div>學號：<span class="score">${state.sid||'未填'}</span> · 進度：已作答 <span class="score">${answered}/${total}</span> 題 · <span class="score ok">答對 ${correct} 題</span></div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  init();
+  document.getElementById('start').addEventListener('click', start);
+  document.getElementById('resetAll').addEventListener('click', ()=>{ 
+    state.answers={}; state.revealAll=false; state.submitted=false; state.idx=0; 
+    document.getElementById('qwrap').style.display='none'; 
+    document.getElementById('summary').style.display='none'; 
+    document.getElementById('config').style.display='block';
+  });
+  document.getElementById('submit').addEventListener('click', ()=>{ state.submitted=true; renderQuestion(); renderSummary(); });
+  document.getElementById('showAnswers').addEventListener('click', ()=>{ 
+    state.revealAll=true; state.submitted=true; 
+    // auto-fill unanswered with correct for便於帶讀
+    state.picked.forEach(q=> state.answers[q.id]=state.answers[q.id]||q.answer);
+    renderQuestion(); renderSummary(); 
+  });
+});
+</script>
+</body>
+</html>
